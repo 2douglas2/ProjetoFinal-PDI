@@ -1,0 +1,10 @@
+
+#Arquivos pycharm
+.idea
+venv
+__pycache__
+pdiufc/__pycache__
+scripts/__pycache__
+
+#Arquivos de saída
+results/*

@@ -28,19 +28,20 @@ h_dist_between_objects = 4          # horizontal distance between objects (cm)
 object_name = 'rasgo'              # object image name (image must be in folder /images/object/)
 object_name2 = 'mancha'             # object image name (image must be in folder /images/object/)
 object_name3 = 'transparente'             # object image name (image must be in folder /images/object/)
-background_name = 'tecido'             # background image name (image must be in folder /images/background/)
+background_name = 'tecido4'             # background image name (image must be in folder /images/background/)
 
 # Video output feature
 fps = 30                            # frames per second
-video_duration = 30                 # video duration (s)
+video_duration = 30                # video duration (s)
 
 # Noise Management
+brightness = 100
 noise_type = ''                     # gaussian, poisson, salt, pepper, s&p, speckle or empty string for no noise
 noise_object_position = 0.3         # x: evenly distributed random value in the range [-x cm, x cm]
 noise_object_size = 0.1             # x: evenly distributed random value in the range [-x cm, x cm]
 norm_params = np.array([[-20, 9], [0, 4], [20, 9]])   # noise parameters for rotation
 norm_weights = [1.0/16.0, 14.0/16.0, 1.0/16.0]        # noise parameters for rotation
-flip_probability = [1/50, 1/50, 1/50, 1/50, 1/50, 1/50, 1/50, 1/50, 42/50]               # probability of the object image being inverted
+flip_probability = [1/40, 1/40, 1/40, 1/40, 1/40, 1/40, 1/40, 1/40, 32/40]               # probability of the object image being inverted
 
 #######################################################################################################################
 #######################################################################################################################
@@ -71,7 +72,7 @@ _output_video_name = '../results/video_' + datetime.now().strftime("%Y%m%d%H%M%S
 video = cv2.VideoWriter(_output_video_name + '.avi', fourcc, float(fps), (width, height))
 
 # Get images
-_bg_pattern = cv2.imread('../images/background/' + background_name + '.jpg')
+_bg_pattern = cv2.imread('../images/background/' + background_name + '.png')
 _object = cv2.imread('../images/object/' + object_name + '.png', cv2.IMREAD_UNCHANGED)
 _object2 = cv2.imread('../images/object/' + object_name2 + '.png', cv2.IMREAD_UNCHANGED)
 _object3 = cv2.imread('../images/object/' + object_name3 + '.png', cv2.IMREAD_UNCHANGED)
@@ -178,6 +179,16 @@ for f in range(fps * video_duration):
     if noise_type:
         noisy = skimage.util.random_noise(frame/255.0, mode=noise_type)
         frame = cv2.normalize(noisy, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+    if brightness:
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        h, s, v = cv2.split(hsv)
+
+        lim = 255 - brightness
+        v[v > lim] = 255
+        v[v <= lim] += brightness
+
+        final_hsv = cv2.merge((h, s, v))
+        frame = cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
 
     video.write(frame)
 
