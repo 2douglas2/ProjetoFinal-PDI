@@ -48,6 +48,9 @@ class VariablesManager:
         self.object_width = None        # object width (cm)
         self.object_height = None       # object height (cm)
 
+        #luminosidade
+        self.lum = None
+
         self.rotation_threshold = None
         self.xe = None
         self.xd = None
@@ -57,7 +60,7 @@ class VariablesManager:
         self._object_width_px = None
         self._object_height_px = None
 
-    def set_info(self, fps, fov, width, height, camera_dist, object_w, object_h):
+    def set_info(self, fps, fov, width, height, camera_dist, object_w, object_h, lum):
         with self.lock:
             #self.rotation_threshold = float(rth)
             self.fps = int(fps)
@@ -67,6 +70,8 @@ class VariablesManager:
             self.camera_distance = float(camera_dist)
             self.object_width = float(object_w)
             self.object_height = float(object_h)
+            self.lum = float(lum)*510/100 - 255
+            print(self.lum)
 
             self._conveyor_width = int(round(2 * float(camera_dist) * np.tan((np.pi / 180 * float(fov)) / 2)))
             self._pixels_per_centimeter = round(int(width) / self._conveyor_width)
@@ -156,7 +161,8 @@ async def counter(websocket, _):
                                 data['res_h'],
                                 data['dist'],
                                 data['tam_w'],
-                                data['tam_h'])
+                                data['tam_h'],
+                                data['lum'])
                     STATE["active"] = True
                     STATE["video_src"] = data["fonte"]
                     STATE["velocity"] = 8

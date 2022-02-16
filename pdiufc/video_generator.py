@@ -5,6 +5,7 @@ import numpy as np
 import skimage
 import pdiutils
 from datetime import datetime
+import random
 
 
 #####################################################################################################################%#
@@ -18,7 +19,7 @@ height = 720                        # camera image height (px)
 dist_camera_to_conveyor = 50        # distance from camera to conveyor belt (cm)
 
 # Object Dimensions
-object_width = 8                    # object width (cm)
+object_width = [2, 4, 8, 10]                    # object width (cm)
 object_height = 25                # object height (cm)
 
 # System Information
@@ -27,7 +28,11 @@ objects_per_column = 2              # quantity of objects in each column
 h_dist_between_objects = 4          # horizontal distance between objects (cm)
 object_name = 'rasgo'              # object image name (image must be in folder /images/object/)
 object_name2 = 'mancha'             # object image name (image must be in folder /images/object/)
-object_name3 = 'transparente'             # object image name (image must be in folder /images/object/)
+object_name3 = 'mancha2'             # object image name (image must be in folder /images/object/)
+object_name4 = 'mancha3'             # object image name (image must be in folder /images/object/)
+object_name5 = 'furo1'             # object image name (image must be in folder /images/object/)
+object_name6 = 'furo2'             # object image name (image must be in folder /images/object/)
+object_name7 = 'transparente'             # object image name (image must be in folder /images/object/)
 background_name = 'tecido4'             # background image name (image must be in folder /images/background/)
 
 # Video output feature
@@ -35,13 +40,13 @@ fps = 30                            # frames per second
 video_duration = 30                # video duration (s)
 
 # Noise Management
-brightness = 100
+brightness = 0
 noise_type = ''                     # gaussian, poisson, salt, pepper, s&p, speckle or empty string for no noise
 noise_object_position = 0.3         # x: evenly distributed random value in the range [-x cm, x cm]
 noise_object_size = 0.1             # x: evenly distributed random value in the range [-x cm, x cm]
 norm_params = np.array([[-20, 9], [0, 4], [20, 9]])   # noise parameters for rotation
 norm_weights = [1.0/16.0, 14.0/16.0, 1.0/16.0]        # noise parameters for rotation
-flip_probability = [1/40, 1/40, 1/40, 1/40, 1/40, 1/40, 1/40, 1/40, 32/40]               # probability of the object image being inverted
+flip_probability = [1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 1/80, 56/80]               # probability of the object image being inverted
 
 #######################################################################################################################
 #######################################################################################################################
@@ -51,14 +56,17 @@ flip_probability = [1/40, 1/40, 1/40, 1/40, 1/40, 1/40, 1/40, 1/40, 32/40]      
 _conveyor_width = int(round(2 * dist_camera_to_conveyor * np.tan((np.pi / 180 * fov) / 2)))                 # cm
 _pixels_per_centimeter = round(width / _conveyor_width)                                                     # px/cm
 _conveyor_height = round(height / _pixels_per_centimeter)                                                   # cm
-_object_width_px = round(object_width * _pixels_per_centimeter)                                             # px
+
+_object_width_px = [round(object_width[0] * _pixels_per_centimeter), round(object_width[1] * _pixels_per_centimeter),
+                    round(object_width[2] * _pixels_per_centimeter), round(object_width[3] * _pixels_per_centimeter)]  #px
+
 _object_height_px = round(object_height * _pixels_per_centimeter)                                           # px
 _conveyor_speed_px = conveyor_speed * _pixels_per_centimeter                                                # px/s
-_h_distance_between_columns = (object_width + h_dist_between_objects) * _pixels_per_centimeter              # px
+_h_distance_between_columns = (object_width[2] + h_dist_between_objects) * _pixels_per_centimeter              # px
 _v_distance_between_lines = int(np.ceil((height + _object_height_px) / (objects_per_column + 1)))           # px
 _line_positions = range(_v_distance_between_lines - _object_height_px, height, _v_distance_between_lines)   # px's
 _pixels_shift_per_frame = _conveyor_speed_px / fps                                                          # px/s
-_half_object_width_px = round(_object_width_px / 2)                                                         # px
+_half_object_width_px = round(_object_width_px[2] / 2)                                                         # px
 _half_object_height_px = round(_object_height_px / 2)                                                       # px
 _noise_position = noise_object_position * _pixels_per_centimeter                                            # px
 _noise_size = noise_object_size * _pixels_per_centimeter                                                    # px
@@ -76,18 +84,68 @@ _bg_pattern = cv2.imread('../images/background/' + background_name + '.png')
 _object = cv2.imread('../images/object/' + object_name + '.png', cv2.IMREAD_UNCHANGED)
 _object2 = cv2.imread('../images/object/' + object_name2 + '.png', cv2.IMREAD_UNCHANGED)
 _object3 = cv2.imread('../images/object/' + object_name3 + '.png', cv2.IMREAD_UNCHANGED)
+_object5 = cv2.imread('../images/object/' + object_name5 + '.png', cv2.IMREAD_UNCHANGED)
+_object6 = cv2.imread('../images/object/' + object_name6 + '.png', cv2.IMREAD_UNCHANGED)
+_object4 = cv2.imread('../images/object/' + object_name4 + '.png', cv2.IMREAD_UNCHANGED)
+_object7 = cv2.imread('../images/object/' + object_name7 + '.png', cv2.IMREAD_UNCHANGED)
+
+_object_resized = cv2.resize(_object, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+_object_resized2 = cv2.resize(_object, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+_object_resized3 = cv2.resize(_object, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+
+_object2_resized = cv2.resize(_object2, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+_object2_resized2 = cv2.resize(_object2, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+_object2_resized3 = cv2.resize(_object2, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+
+_object3_resized = cv2.resize(_object3, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+_object3_resized2 = cv2.resize(_object3, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+_object3_resized3 = cv2.resize(_object3, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+
+_object4_resized = cv2.resize(_object4, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+_object4_resized2 = cv2.resize(_object4, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+_object4_resized3 = cv2.resize(_object4, (random.choice(_object_width_px), _object_height_px), interpolation=cv2.INTER_AREA)
+
+aux5 = random.choice([3,4])
+_object5_resized = cv2.resize(_object5, (aux5, aux5), interpolation=cv2.INTER_AREA)
+aux5 = random.choice([3,4])
+_object5_resized2 = cv2.resize(_object5, (aux5, aux5), interpolation=cv2.INTER_AREA)
+aux5 = random.choice([3,4])
+_object5_resized3 = cv2.resize(_object5, (aux5, aux5), interpolation=cv2.INTER_AREA)
+
+aux6 = random.choice([3,4])
+_object6_resized = cv2.resize(_object6, (aux6, aux6), interpolation=cv2.INTER_AREA)
+aux6 = random.choice([3,4])
+_object6_resized2 = cv2.resize(_object6, (aux6, aux6), interpolation=cv2.INTER_AREA)
+aux6 = random.choice([3,4])
+_object6_resized3 = cv2.resize(_object6, (aux6, aux6), interpolation=cv2.INTER_AREA)
+
 _object_variations = [
     _object,
-    cv2.flip(_object, 0),
-    cv2.flip(_object, 1),
-    cv2.flip(_object, -1),
+    cv2.flip(_object_resized, 0),
+    cv2.flip(_object_resized2, 1),
+    cv2.flip(_object_resized3, -1),
     _object2,
-    cv2.flip(_object2, 0),
-    cv2.flip(_object2, 1),
-    cv2.flip(_object2, -1),
-    _object3
+    cv2.flip(_object2_resized, 0),
+    cv2.flip(_object2_resized2, 1),
+    cv2.flip(_object2_resized3, -1),
+    _object3,
+    cv2.flip(_object3_resized, 0),
+    cv2.flip(_object3_resized2, 1),
+    cv2.flip(_object3_resized3, -1),
+    _object4,
+    cv2.flip(_object4_resized, 0),
+    cv2.flip(_object4_resized2, 1),
+    cv2.flip(_object4_resized3, -1),
+    _object5,
+    cv2.flip(_object5_resized, 0),
+    cv2.flip(_object5_resized2, 1),
+    cv2.flip(_object5_resized3, -1),
+    _object6,
+    cv2.flip(_object6_resized, 0),
+    cv2.flip(_object6_resized2, 1),
+    cv2.flip(_object6_resized3, -1),
+    _object7
 ]
-
 
 def add_objects(background, x_pos, bg_limit):
     obj_w = _h_distance_between_columns

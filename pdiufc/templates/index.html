@@ -15,26 +15,33 @@
 </head>
 
 <style>
-    .bg-purple{
-        background-color: #6610F2 !important;
+    .bg-black{
+        background-color: #292929 !important;
+    }
+
+    body {
+        font-family: 'Brush Script MT', cursive;
+    }
+    .card{
+        font-family: 'Brush Script MT', cursive;
     }
 </style>    
 
 <body>
     <header>
-        <div class="navbar navbar-dark bg-purple box-shadow">
+        <div class="navbar navbar-dark bg-black box-shadow">
             <div class="container-fluid d-flex justify-content-center">
                 <a href="#" class="navbar-brand d-flex align-items-center justify-content-center">
                     <img src="https://cdn-icons-png.flaticon.com/512/1176/1176990.png" width="50px">
-                    <strong style="margin-left: 20px">Jeans Tracker</strong>
+                    <strong style="margin-left: 20px">Sistema para Detecção de Defeitos na Fabricação de Tecido Jeans</strong>
                 </a>
             </div>
         </div>
     </header>
 
     <main role="main">
-        <div style="background-image: url(../static/img/background-vapor.jpg); background-repeat: no-repeat; background-size: cover;"
-                class="album py-5 bg-dark" >
+        <div style="background-image: url(../static/img/background-jeans.jpg); background-repeat: no-repeat; background-size: cover;"
+                class="album py-5 bg-black" >
             <div class="container-fluid">
                 <div class="row" id="items_container">
                     <div class="col-xl-9 col-lg-12 col-md-12 col-sm-12 col-xs-12 mb-4">
@@ -44,13 +51,13 @@
                     </div>
                     <div class="col-xl-3 col-lg-12 col-md-12 col-sm-12 col-xs-12 mb-4">
                         <div class="h-100">
-                            <div class="h-100 card box-shadow bg-purple">
+                            <div class="h-100 card box-shadow bg-black">
                                 <div>
                                     <strong class="text-white">Parâmetros do sistema</strong>
                                 </div>
                                 <hr class="bg-white" style="margin: 8px 0 30px 0">
-                                <form action="#" onsubmit="inciar();return false;">
-                                    <fieldset id="fieldset" disabled>
+                                <form action="#" onsubmit="iniciar();return false;">
+                                    <fieldset id="fieldset">
                                         <div class="form-row">
                                             <div class="form-group col-xl-12 col-md-6">
                                                 <div class="input-group input-group-sm">
@@ -118,6 +125,15 @@
                                             </div>
                                         </div>
                                         <hr class="bg-white" style="margin: 2px 0 15px 0">
+                                        <strong class="text-white" style="font-size: 13px;">Luminosidade</strong>
+                                        <div class="form-row" style="margin-top: 10px;">
+                                            <div class="slider w-100">
+                                                <input id="slider" type="range" min="0" max="100" value="50" style="width:80%"/>
+                                                <p id="selector" class="d-inline-flex text-white ml-2">50%</p>
+                                            </div>
+                                        </div>
+                                        <hr class="bg-white" style="margin: 2px 0 15px 0">
+
                                     </fieldset>
                                     <button type="submit" id="btn_iniciar" style="width: 100%;" class="btn btn-success">Iniciar</button>
                                     <button type="button" onclick="parar()" id="btn_parar" style="width: 100%;" class="btn btn-danger">Parar</button>
@@ -129,7 +145,7 @@
             </div>
             <div class="row mx-4 mt-4">
                 <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12 mb-4">
-                    <div class="card box-shadow bg-purple">
+                    <div class="card box-shadow bg-black">
                         <div class="d-flex justify-content-around">
                             <div class="website-infos">
                                 <h2><span class="counter count_fails text-white">100</span></h2>
@@ -142,7 +158,7 @@
                     </div>
                 </div>
                 <div class="col-lg-3 col-md-6 col-sm-6 col-xs-12 mb-4">
-                    <div class="card box-shadow bg-purple">
+                    <div class="card box-shadow bg-black">
                         <div class="d-flex justify-content-around">
                             <div class="website-infos">
                                 <h2><span class="counter velocity text-white">8 cm/s</span></h2>
@@ -161,6 +177,14 @@
     <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
     <script type="text/javascript">
+
+        $("#slider").on('change', function() {
+            let val = $(this).val();
+            val = parseInt(val);
+            $("#selector").html(val + '%');
+            iniciar()
+        });
+
         var count_fails = document.querySelector('.count_fails'),
             velocity = document.querySelector('.velocity'),
             video_inputs = document.querySelector('.video_input'),
@@ -184,7 +208,7 @@
                         video_inputs.selectedIndex = data.input_video.indexOf(data.video_src);
                     }
 
-                    document.getElementById("fieldset").disabled = data.active;
+                    //document.getElementById("fieldset").disabled = data.active;
 
                     if(data.active) {
                         document.getElementById("btn_iniciar").style.display = "none";
@@ -200,7 +224,6 @@
         };
 
         var fonte = document.getElementById("video_input")
-        //var limiar = document.getElementById("limiar")
         var fov = document.getElementById("fov")
         var fps = document.getElementById("fps")
         var dist = document.getElementById("dist")
@@ -208,20 +231,21 @@
         var tam_h = document.getElementById("tam_h")
         var res_w = document.getElementById("resol_w")
         var res_h = document.getElementById("resol_h")
+        var lum =  document.getElementById("slider")
 
-        function inciar() {
+        function iniciar() {
 
             obj = {
                 active: true,
                 fonte: fonte.value,
-                //limiar: limiar.value,
                 fov: fov.value,
                 fps: fps.value,
                 dist: dist.value,
                 tam_w: tam_w.value,
                 tam_h: tam_h.value,
                 res_w: res_w.value,
-                res_h: res_h.value
+                res_h: res_h.value,
+                lum: lum.value
             }
             websocket.send(JSON.stringify(obj));
             return false;
